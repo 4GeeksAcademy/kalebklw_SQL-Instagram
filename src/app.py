@@ -65,21 +65,33 @@ def event_hello():
 @app.route('/event', methods=['POST'])
 def event_add():
     body = request.get_json()
-    name = body['name']
-    event_planner = body['event_planner']
+    name_data = body['name']
+    event_planner_data = body['event_planner']
+
     new_event = Event(
-        name=name,
-        event_planner=event_planner
+        name=name_data,
+        event_planner=event_planner_data
     )
     db.session.add(new_event)
     db.session.commit()
 
-    return jsonify(new_event.serialize())
+    return jsonify(new_event.serialize()), 200
 
+@app.route('/event/<int:event_id>', methods=['PUT'])
+def update_event(event_id):
+    body = request.get_json()
+    event = db.session.get(Event, event_id)
+    if event:
+        event.name = body['name']
+        db.session.commit()
+
+        return jsonify(event.serialize()), 200
+    else:
+        return "no event with that ID!"
 
 @app.route('/event/<int:event_id>', methods=['DELETE'])
 def delete_event(event_id):
-    event =  db.session.get(Event, event_id)
+    event = db.session.get(Event, event_id)
     db.session.add(event)
     db.session.commit()
 
